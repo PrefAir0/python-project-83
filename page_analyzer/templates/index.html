@@ -1,35 +1,16 @@
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Анализатор страниц</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM" crossorigin="anonymous">
-</head>
 {% extends "base.html" %}
 
 {% block content %}
-<body class="d-flex flex-column min-vh-100">
-    <header>
-        <nav class="navbar-dark bg-dark py-2 px-4 d-flex align-items-center gap-4 text-center ">
-            <p class="navbar-brand fs-3" href="/">Анализатор страниц</p>
-            <a href="{{ url_for('get_urls')"}}>Сайты</a>
-        </nav>
-    </header>
-    <main class="flex-grow-1">
-        <div class="p-5 bg-light text-dark">
-            <div class="row">
-                <div class="col-12 col-md-10 col-lg-8 mx-auto text-left">
-                    <h1 class="display-3">Анализатор страниц</h1>
-                    <p class="lead">Бесплатно проверяйте сайты на SEO пригодность</p>
-                <form action="{{ url_for('add_url') }}" method="post" class="d-flex justify-content-center mt-4">
-                    <input type="text" name="url" value="{{ url_input or '' }}" class="form-control form-control-lg w-75" placeholder="https://www.example.com" required>
-                    <button type="submit" class="btn btn-primary btn-lg ms-2 px-5">Проверить</button>
-                </form>
-            </div>
+<div class="p-5 bg-light text-dark">
+    <div class="row">
+        <div class="col-12 col-md-10 col-lg-8 mx-auto text-left">
+            <h1 class="display-3">Анализатор страниц</h1>
+            <p class="lead">Бесплатно проверяйте сайты на SEO пригодность</p>
+            <form action="{{ url_for('add_url') }}" method="post" class="d-flex justify-content-center mt-4">
+                <input type="text" name="url" value="{{ url_input or '' }}" class="form-control form-control-lg w-75" placeholder="https://www.example.com" required>
+                <button type="submit" class="btn btn-primary btn-lg ms-2 px-5">Проверить</button>
+            </form>
         </div>
-    </main>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz" crossorigin="anonymous"></script>
-</body>
-</html>
+    </div>
+</div>
 {% endblock %}
