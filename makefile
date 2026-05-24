@@ -7,7 +7,7 @@ install:
 	uv sync
 
 dev:
-    uv run flask --debug --app page_analyzer:app run
+	uv run flask --debug --app page_analyzer:app run
 
 build:
 	./build.sh
