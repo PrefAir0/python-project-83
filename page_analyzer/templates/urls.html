@@ -9,6 +9,7 @@
                 <th>ID</th>
                 <th>Имя</th>
                 <th>Последняя проверка</th>
+                <th>Код ответа</th>
             </tr>
         </thead>
         <tbody>
@@ -17,7 +18,7 @@
                 <td>{{ url[0] }}</td>
                 <td><a href="{{ url_for('show_url', id=url[0]) }}">{{ url[1] }}</a></td>
                 <td>{{ url[2] or '' }}</td>
-            </tr>
+                <td>{{ url[3] or '' }}</td> </tr>
             {% endfor %}
         </tbody>
     </table>

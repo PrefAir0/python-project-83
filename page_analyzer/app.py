@@ -5,6 +5,7 @@ from urllib.parse import urlparse
 import validators
 from flask import *
 from dotenv import load_dotenv
+import requests
 
 
 load_dotenv()
@@ -56,11 +57,14 @@ def get_urls():
     conn = get_db_connection()
     cur = conn.cursor()
     cur.execute("""
-        SELECT urls.id, urls.name, MAX(url_checks.created_at) AS last_check
+        SELECT DISTINCT ON (urls.id)
+        urls.id,
+        urls.name,
+        url_checks.created_at AS last_check_date,
+        url_checks.status_code AS last_check_status
         FROM urls
         LEFT JOIN url_checks ON urls.id = url_checks.url_id
-        GROUP BY urls.id
-        ORDER BY urls.id DESC
+        ORDER BY urls.id DESC, url_checks.id DESC
     """)
     urls = cur.fetchall()
     cur.close()
@@ -93,15 +97,27 @@ def show_url(id):
 def add_check(id):
     conn = get_db_connection()
     cur = conn.cursor()
+    cur.execute("SELECT name FROM urls WHERE id = %s", (id,))
+    url_row = cur.fetchone()
+    
+    if not url_row:
+        cur.close()
+        conn.close()
+        return "Страница не найдена", 404
+        
+    url_name = url_row[0]
     try:
+        response = requests.get(url_name, timeout=5)
+
+        response.raise_for_status()
+
         cur.execute(
-            "INSERT INTO url_checks (url_id, created_at) VALUES (%s, %s)",
-            (id, date.today())
+            "INSERT INTO url_checks (url_id, status_code, created_at) VALUES (%s, %s, %s)",
+            (id, response.status_code, date.today())
         )
         conn.commit()
         flash('Страница успешно проверена', 'success')
-    except Exception:
-        conn.rollback()
+    except requests.RequestException:
         flash('Произошла ошибка при проверке', 'danger')
     finally:
         cur.close()
