@@ -1,12 +1,12 @@
 import os
-import psycopg
 from datetime import date
 from urllib.parse import urlparse
-import validators
-from flask import Flask, flash, redirect, render_template, request, url_for
-from dotenv import load_dotenv
-import requests
 from bs4 import BeautifulSoup
+from dotenv import load_dotenv
+from flask import Flask, flash, redirect, render_template, request, url_for
+import psycopg
+import requests
+import validators
 
 load_dotenv()
 
@@ -16,7 +16,6 @@ DATABASE_URL = os.getenv('DATABASE_URL')
 
 def get_db_connection():
     return psycopg.connect(os.environ.get('DATABASE_URL'))
-
 
 @app.route('/')
 def index():
@@ -36,7 +35,10 @@ def add_url():
 
     with psycopg.connect(DATABASE_URL) as conn:
         with conn.cursor() as cur:
-            cur.execute("SELECT id FROM urls WHERE name = %s", (normalized_url,))
+            cur.execute(
+                "SELECT id FROM urls WHERE name = %s",
+                (normalized_url,)
+            )
             existing_url = cur.fetchone()
 
             if existing_url:
@@ -44,8 +46,10 @@ def add_url():
                 url_id = existing_url[0]
             else:
                 cur.execute(
-                    "INSERT INTO urls (name, created_at) VALUES (%s, %s) RETURNING id",
-                    (normalized_url, date.today()))
+                    "INSERT INTO urls (name, created_at) "
+                    "VALUES (%s, %s) RETURNING id",
+                    (normalized_url, date.today())
+                )
                 url_id = cur.fetchone()[0]
                 conn.commit()
                 flash('Страница успешно добавлена', 'success')
@@ -55,9 +59,8 @@ def add_url():
 def get_urls():
     conn = get_db_connection()
     cur = conn.cursor()
-
     cur.execute("""
-        SELECT 
+        SELECT
             urls.id,
             urls.name,
             latest_checks.created_at AS last_check_date,
@@ -75,6 +78,7 @@ def get_urls():
     conn.close()
     return render_template('urls.html', urls=urls)
 
+
 @app.route('/urls/<int:id>')
 def show_url(id):
     conn = get_db_connection()
@@ -82,18 +86,21 @@ def show_url(id):
 
     cur.execute("SELECT * FROM urls WHERE id = %s", (id,))
     url = cur.fetchone()
-    
+
     if not url:
         cur.close()
         conn.close()
         return "Сайт не найден", 404
 
-    cur.execute("SELECT * FROM url_checks WHERE url_id = %s ORDER BY id DESC", (id,))
+    cur.execute(
+        "SELECT * FROM url_checks WHERE url_id = %s ORDER BY id DESC",
+        (id,)
+    )
     checks = cur.fetchall()
-    
+
     cur.close()
     conn.close()
-    
+
     return render_template('url.html', url=url, checks=checks)
 
 
@@ -103,40 +110,43 @@ def add_check(id):
     cur = conn.cursor()
     cur.execute("SELECT name FROM urls WHERE id = %s", (id,))
     url_row = cur.fetchone()
-    
+
     if not url_row:
         cur.close()
         conn.close()
         return "Страница не найдена", 404
-        
-    url_name = url_row[0]
 
+    url_name = url_row[0]
     try:
         response = requests.get(url_name, timeout=5)
         response.raise_for_status()
+
         html_content = response.text
         soup = BeautifulSoup(html_content, 'html.parser')
+
         h1_tag = soup.find('h1')
         h1 = h1_tag.text.strip() if h1_tag else None
+
         title_tag = soup.find('title')
         title = title_tag.text.strip() if title_tag else None
 
         meta_desc = soup.find('meta', attrs={'name': 'description'})
-        description = meta_desc.get('content', '').strip() if meta_desc else None
-        if description == '':
-            description = None
+        content = meta_desc.get('content', '').strip() if meta_desc else None
+
+        if content == '':
+            content = None
+
         cur.execute("""
-            INSERT INTO url_checks (url_id, status_code, h1, title, description, created_at)
+            INSERT INTO url_checks
+            (url_id, status_code, h1, title, description, created_at)
             VALUES (%s, %s, %s, %s, %s, %s)
-        """, (id, response.status_code, h1, title, description, date.today()))
-        
+        """, (id, response.status_code, h1, title, content, date.today()))
         conn.commit()
         flash('Страница успешно проверена', 'success')
-        
     except requests.RequestException:
         flash('Произошла ошибка при проверке', 'danger')
     finally:
         cur.close()
         conn.close()
-        
+
     return redirect(url_for('show_url', id=id))
