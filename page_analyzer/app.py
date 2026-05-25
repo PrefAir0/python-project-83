@@ -3,7 +3,7 @@ import psycopg
 from datetime import date
 from urllib.parse import urlparse
 import validators
-from flask import *
+from flask import Flask, flash, redirect, render_template, request, url_for
 from dotenv import load_dotenv
 import requests
 from bs4 import BeautifulSoup
@@ -110,7 +110,7 @@ def add_check(id):
         return "Страница не найдена", 404
         
     url_name = url_row[0]
-    
+
     try:
         response = requests.get(url_name, timeout=5)
         response.raise_for_status()

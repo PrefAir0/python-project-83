@@ -25,11 +25,9 @@
             <tr>
                 <td>{{ check[0] }}</td>
                 <td>{{ check[2] or '' }}</td>
-                
                 <td>{{ (check[3] or '') | truncate(200) }}</td>
                 <td>{{ (check[4] or '') | truncate(200) }}</td>
                 <td>{{ (check[5] or '') | truncate(200) }}</td>
-                
                 <td>{{ check[6] }}</td>
             </tr>
             {% endfor %}
