@@ -14,8 +14,10 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
 DATABASE_URL = os.getenv('DATABASE_URL')
 
+
 def get_db_connection():
     return psycopg.connect(os.environ.get('DATABASE_URL'))
+
 
 @app.route('/')
 def index():
@@ -53,7 +55,9 @@ def add_url():
                 url_id = cur.fetchone()[0]
                 conn.commit()
                 flash('Страница успешно добавлена', 'success')
+
     return redirect(url_for('show_url', id=url_id))
+
 
 @app.route('/urls')
 def get_urls():
