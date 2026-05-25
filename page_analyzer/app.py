@@ -55,15 +55,20 @@ def add_url():
 def get_urls():
     conn = get_db_connection()
     cur = conn.cursor()
+
     cur.execute("""
-        SELECT DISTINCT ON (urls.id)
-        urls.id,
-        urls.name,
-        url_checks.created_at AS last_check_date,
-        url_checks.status_code AS last_check_status
+        SELECT 
+            urls.id,
+            urls.name,
+            latest_checks.created_at AS last_check_date,
+            latest_checks.status_code AS last_check_status
         FROM urls
-        LEFT JOIN url_checks ON urls.id = url_checks.url_id
-        ORDER BY urls.id DESC, url_checks.id DESC
+        LEFT JOIN (
+            SELECT DISTINCT ON (url_id) url_id, created_at, status_code
+            FROM url_checks
+            ORDER BY url_id, id DESC
+        ) AS latest_checks ON urls.id = latest_checks.url_id
+        ORDER BY urls.id DESC
     """)
     urls = cur.fetchall()
     cur.close()
