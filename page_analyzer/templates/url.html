@@ -4,20 +4,18 @@
 <div class="container mt-5">
     <h1>Сайт: {{ url[1] }}</h1>
     <table class="table table-bordered table-hover">
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Имя</th>
-                <th>Дата создания</th>
-            </tr>
-        </thead>
         <tbody>
-            {% for url in urls %}
             <tr>
+                <td>ID</td>
                 <td>{{ url[0] }}</td>
-                <td><a href="{{ url_for('show_url', id=url[0]) }}">{{ url[1] }}</a></td>
-                <td>{{ url[2] or '' }}</td>
-            {% endfor %}
+            </tr>
+            <tr>
+                <td>Имя</td>
+                <td>{{ url[1] }}</td>
+            </tr>
+            <tr>
+                <td>Дата создания</td>
+                <td>{{ url[2] }}</td> </tr>
         </tbody>
     </table>
 
