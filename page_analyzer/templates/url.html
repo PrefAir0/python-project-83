@@ -3,20 +3,34 @@
 {% block content %}
 <div class="container mt-5">
     <h1>Сайт: {{ url[1] }}</h1>
-    <table class="table table-bordered table-hover mt-3" data-test="url">
+    
+    <h2 class="mt-5">Проверки</h2>
+    <form method="post" action="{{ url_for('add_check', id=url[0]) }}">
+        <input type="submit" class="btn btn-primary mb-3" value="Запустить проверку">
+    </form>
+
+    <table class="table table-bordered table-hover" data-test="checks">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Код ответа</th>
+                <th>h1</th>
+                <th>title</th>
+                <th>description</th>
+                <th>Дата создания</th>
+            </tr>
+        </thead>
         <tbody>
+            {% for check in checks %}
             <tr>
-                <td>ID</td>
-                <td>{{ url[0] }}</td>
+                <td>{{ check[0] }}</td>
+                <td>{{ check[2] or '' }}</td>
+                <td>{{ check[3] or '' }}</td>
+                <td>{{ check[4] or '' }}</td>
+                <td>{{ check[5] or '' }}</td>
+                <td>{{ check[6] }}</td>
             </tr>
-            <tr>
-                <td>Имя</td>
-                <td>{{ url[1] }}</td>
-            </tr>
-            <tr>
-                <td>Дата добавления</td>
-                <td>{{ url[2] }}</td>
-            </tr>
+            {% endfor %}
         </tbody>
     </table>
 </div>

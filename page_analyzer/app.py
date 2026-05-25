@@ -6,11 +6,15 @@ import validators
 from flask import *
 from dotenv import load_dotenv
 
+
 load_dotenv()
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
 DATABASE_URL = os.getenv('DATABASE_URL')
+
+def get_db_connection():
+    return psycopg.connect(os.environ.get('DATABASE_URL'))
 
 
 @app.route('/')
@@ -47,22 +51,60 @@ def add_url():
                 flash('Страница успешно добавлена', 'success')
     return redirect(url_for('show_url', id=url_id))
 
-
-@app.route('/urls', methods=['GET'])
+@app.route('/urls')
 def get_urls():
-    with psycopg.connect(DATABASE_URL) as conn:
-        with conn.cursor() as cur:
-            cur.execute("SELECT id, name, created_at FROM urls ORDER BY id DESC")
-            urls = cur.fetchall()
-            
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute("""
+        SELECT urls.id, urls.name, MAX(url_checks.created_at) AS last_check
+        FROM urls
+        LEFT JOIN url_checks ON urls.id = url_checks.url_id
+        GROUP BY urls.id
+        ORDER BY urls.id DESC
+    """)
+    urls = cur.fetchall()
+    cur.close()
+    conn.close()
     return render_template('urls.html', urls=urls)
 
-
-@app.route('/urls/<int:id>', methods=['GET'])
+@app.route('/urls/<int:id>')
 def show_url(id):
-    with psycopg.connect(DATABASE_URL) as conn:
-        with conn.cursor() as cur:
-            cur.execute("SELECT id, name, created_at FROM urls WHERE id = %s", (id,))
-            url_data = cur.fetchone()
+    conn = get_db_connection()
+    cur = conn.cursor()
 
-    return render_template('url.html', url=url_data)
+    cur.execute("SELECT * FROM urls WHERE id = %s", (id,))
+    url = cur.fetchone()
+    
+    if not url:
+        cur.close()
+        conn.close()
+        return "Сайт не найден", 404
+
+    cur.execute("SELECT * FROM url_checks WHERE url_id = %s ORDER BY id DESC", (id,))
+    checks = cur.fetchall()
+    
+    cur.close()
+    conn.close()
+    
+    return render_template('url.html', url=url, checks=checks)
+
+
+@app.post('/urls/<int:id>/checks')
+def add_check(id):
+    conn = get_db_connection()
+    cur = conn.cursor()
+    try:
+        cur.execute(
+            "INSERT INTO url_checks (url_id, created_at) VALUES (%s, %s)",
+            (id, date.today())
+        )
+        conn.commit()
+        flash('Страница успешно проверена', 'success')
+    except Exception:
+        conn.rollback()
+        flash('Произошла ошибка при проверке', 'danger')
+    finally:
+        cur.close()
+        conn.close()
+        
+    return redirect(url_for('show_url', id=id))
