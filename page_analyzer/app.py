@@ -45,8 +45,7 @@ def add_url():
             else:
                 cur.execute(
                     "INSERT INTO urls (name, created_at) VALUES (%s, %s) RETURNING id",
-                    (normalized_url, date.today())
-                )
+                    (normalized_url, date.today()))
                 url_id = cur.fetchone()[0]
                 conn.commit()
                 flash('Страница успешно добавлена', 'success')
