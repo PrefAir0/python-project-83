@@ -6,7 +6,7 @@ import validators
 from flask import *
 from dotenv import load_dotenv
 import requests
-
+from bs4 import BeautifulSoup
 
 load_dotenv()
 
@@ -110,17 +110,29 @@ def add_check(id):
         return "Страница не найдена", 404
         
     url_name = url_row[0]
+    
     try:
         response = requests.get(url_name, timeout=5)
-
         response.raise_for_status()
+        html_content = response.text
+        soup = BeautifulSoup(html_content, 'html.parser')
+        h1_tag = soup.find('h1')
+        h1 = h1_tag.text.strip() if h1_tag else None
+        title_tag = soup.find('title')
+        title = title_tag.text.strip() if title_tag else None
 
-        cur.execute(
-            "INSERT INTO url_checks (url_id, status_code, created_at) VALUES (%s, %s, %s)",
-            (id, response.status_code, date.today())
-        )
+        meta_desc = soup.find('meta', attrs={'name': 'description'})
+        description = meta_desc.get('content', '').strip() if meta_desc else None
+        if description == '':
+            description = None
+        cur.execute("""
+            INSERT INTO url_checks (url_id, status_code, h1, title, description, created_at)
+            VALUES (%s, %s, %s, %s, %s, %s)
+        """, (id, response.status_code, h1, title, description, date.today()))
+        
         conn.commit()
         flash('Страница успешно проверена', 'success')
+        
     except requests.RequestException:
         flash('Произошла ошибка при проверке', 'danger')
     finally:
