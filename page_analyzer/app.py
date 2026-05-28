@@ -1,7 +1,6 @@
 from flask import Flask, request, render_template, flash, redirect, url_for
-from page_analyzer import database, parser, url_normalizer
 import requests
-
+from . import database, parser, url_normalizer
 app = Flask(__name__)
 
 @app.route('/urls', methods=['POST'])
