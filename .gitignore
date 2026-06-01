@@ -1,5 +1,4 @@
 .env
 __pycache__/
 .venv/
-.env
-hexlet_code.egg-info
+/hexlet_code.egg-info
