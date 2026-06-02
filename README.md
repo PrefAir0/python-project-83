@@ -16,5 +16,5 @@
 ## Установка и запуск локально
 
 * Установи зависимости с помощью uv
-* Создайте .env и укажите в [DATABASE_URL=postgresql://user:password@localhost:5432/page_analyzer] и ваш [SECRET_KEY]
+* Создайте .env и укажите в нем [DATABASE_URL=postgresql://user:password@localhost:5432/page_analyzer] и ваш [SECRET_KEY]
 * Запустите проект локально uv run flask --debug --app page_analyzer:app run
